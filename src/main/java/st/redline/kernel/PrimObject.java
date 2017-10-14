@@ -15,6 +15,10 @@ public class PrimObject {
     public void javaValue(Object object) {
         this.javaValue = object;
     }
+    
+    public Object javaValue() {
+        return this.javaValue;
+    }
 
     public Object javaValue() {
         return javaValue;
