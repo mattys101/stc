@@ -1,10 +1,17 @@
 /* Redline Smalltalk, Copyright (c) James C. Ladd. All rights reserved. See LICENSE in the root of this distribution. */
 package st.redline.kernel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import edu.emory.mathcs.backport.java.util.Arrays;
+
 /**
  * @author Matt Selway
  */
 public class Java extends PrimObject implements JavaWrapper {
+    
+    private static Log LOG = LogFactory.getLog(Java.class);
 
     // XXX: instance variables will need to be converted to conform to PrimObject so
     // that this class fully conforms to Smalltalk.
@@ -43,5 +50,91 @@ public class Java extends PrimObject implements JavaWrapper {
     
     public PrimObject javaClassName() {
         return this.javaClassName;
+    }
+    
+    @Override
+    public PrimObject call(PrimObject methodName) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + " " + methodName);
+
+        // TODO Auto-generated method stub
+        return new PrimObject();
+    }
+
+    @Override
+    public PrimObject call(PrimObject methodName, PrimObject arg1) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + " " + methodName + " " + arg1);
+        
+        // TODO Auto-generated method stub
+        return new PrimObject();
+    }
+
+    @Override
+    public PrimObject call(PrimObject methodName, PrimObject arg1, PrimObject arg2) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + " " + methodName + " " + arg1 + " " + arg2);
+        
+        // TODO Auto-generated method stub
+        return new PrimObject();
+    }
+
+    @Override
+    public PrimObject call(PrimObject methodName, PrimObject arg1, PrimObject arg2,
+                           PrimObject arg3) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + " " + methodName + " " + arg1 + " " + arg2 + " " + arg3);
+        
+        // TODO Auto-generated method stub
+        return new PrimObject();
+    }
+
+    @Override
+    public PrimObject call(PrimObject methodName, PrimObject... args) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + " " + methodName + " " + Arrays.toString(args));
+        
+        // TODO Auto-generated method stub
+        return new PrimObject();
+    }
+
+    @Override
+    public PrimObject callSignature(PrimObject methodName, PrimObject signature,
+                                    PrimObject arg1) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + " " + methodName + "(" + signature + ") " + arg1);
+        
+        // TODO Auto-generated method stub
+        return new PrimObject();
+    }
+
+    @Override
+    public PrimObject callSignature(PrimObject methodName, PrimObject signature,
+                                    PrimObject arg1, PrimObject arg2) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + " " + methodName + "(" + signature + ") " + arg1 + " " + arg2);
+        
+        // TODO Auto-generated method stub
+        return new PrimObject();
+    }
+
+    @Override
+    public PrimObject callSignature(PrimObject methodName, PrimObject signature,
+                                    PrimObject arg1, PrimObject arg2, PrimObject arg3) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + " " + methodName + "(" + signature + ") " + arg1 + " " + arg2 + " " + arg3);
+        
+        // TODO Auto-generated method stub
+        return new PrimObject();
+    }
+
+    @Override
+    public PrimObject callSignature(PrimObject methodName, PrimObject signature,
+                                    PrimObject... args) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + " " + methodName + "(" + signature + ") " + Arrays.toString(args));
+        
+        // TODO Auto-generated method stub
+        return new PrimObject();
     }
 }

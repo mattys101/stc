@@ -28,6 +28,18 @@ public interface JavaWrapper {
     public PrimObject javaClassName();
     public PrimObject javaClassName(PrimObject className);
     
+    public PrimObject call(PrimObject methodName);
+    public PrimObject call(PrimObject methodName, PrimObject arg1);
+    public PrimObject call(PrimObject methodName, PrimObject arg1, PrimObject arg2);
+    public PrimObject call(PrimObject methodName, PrimObject arg1, PrimObject arg2, PrimObject arg3);
+    public PrimObject call(PrimObject methodName, PrimObject... args);
+    
+    public PrimObject callSignature(PrimObject methodName, PrimObject signature, PrimObject arg1);
+    public PrimObject callSignature(PrimObject methodName, PrimObject signature, PrimObject arg1, PrimObject arg2);
+    public PrimObject callSignature(PrimObject methodName, PrimObject signature, PrimObject arg1, PrimObject arg2, PrimObject arg3);
+    public PrimObject callSignature(PrimObject methodName, PrimObject signature, PrimObject... args);
+    
+    
     public default Object newInstanceOf(Class<?> aClass) {
         Log LOG = LogFactory.getLog(JavaWrapper.class);
         LOG.info("Instantiating class " + aClass.getName());
@@ -40,6 +52,20 @@ public interface JavaWrapper {
         }
         
         return null;
+    }
+    
+    public default PrimObject call(Class<?> clazz, Object reciever, String methodName, PrimObject... args) {
+        Log LOG = LogFactory.getLog(JavaWrapper.class);
+        LOG.info("Calling method " + clazz.getName() + "." + methodName);
+        
+        return new PrimObject();
+    }
+    
+    public default PrimObject callSignature(Class<?> clazz, Object reciever, String methodName, String signature, PrimObject... args) {
+        Log LOG = LogFactory.getLog(JavaWrapper.class);
+        LOG.info("Calling method " + clazz.getName() + "." + methodName + " with signature " + signature);
+        
+        return new PrimObject();
     }
     
 }
