@@ -23,7 +23,7 @@ public class TestJava {
         Assert.assertEquals("Some string value", j.javaValue());
     }
     
-    public void testJavaOnPrimObject() {
+    public void testNestedJavaObjects() {
         
         Java j1 = Java.on("The original string");
         Java j2 = Java.on(j1);
