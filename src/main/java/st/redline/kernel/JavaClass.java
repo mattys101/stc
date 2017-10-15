@@ -14,6 +14,7 @@ public class JavaClass extends PrimObject implements JavaWrapper {
     // that this class fully conforms to Smalltalk.
     protected PrimObject javaClassName;
     
+    // will just be #for: in Smalltalk
     public static JavaClass forClass(PrimObject className) {
         JavaClass jc = new JavaClass();
         jc.javaClassName(className);
@@ -22,6 +23,8 @@ public class JavaClass extends PrimObject implements JavaWrapper {
     }
     
     public static JavaClass on(Class<?> aClass) {
+        if (aClass == null) return null; // XXX: should return 'nil'
+        
         JavaClass jc = new JavaClass();
         jc.javaValue(aClass);
         // XXX: to be converted into Smalltalk String
@@ -45,7 +48,6 @@ public class JavaClass extends PrimObject implements JavaWrapper {
     
     // Will just be called #new: in Smalltalk
     public PrimObject newInstance() {
-        // XXX: next step
-        return null;
+        return Java.on(this.newInstanceOf((Class<?>)javaValue()));
     }
 }

@@ -12,18 +12,24 @@ public class Java extends PrimObject implements JavaWrapper {
     
     // Will just be called #new: in Smalltalk
     public static Java newInstance(PrimObject className) {
-        return new Java();
+        Class<?> aClass = JavaWrapper.findClass(className);
+        Java instance = new Java();
+        instance.javaValue(instance.newInstanceOf(aClass));
+        instance.javaClassName(className);
+        return instance;
     }
     
     public static Java on(Object o) {
-        Java value = new Java();
-        value.javaValue(o);
+        if (o == null) return null; // XXX: should be 'nil'
+        if (o instanceof Java) return (Java) o; // avoid nested Java objects
+        
+        Java instance = new Java();
+        instance.javaValue(o);
         // XXX: to be converted into Smalltalk String
         PrimObject className = new PrimObject();
         className.javaValue(o.getClass().getName());
-        value.javaClassName(className);
-        // javaClass
-        return value;
+        instance.javaClassName(className);
+        return instance;
     }
     
     protected Java() {
