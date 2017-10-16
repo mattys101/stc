@@ -57,8 +57,7 @@ public class Java extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName);
 
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.call(JavaWrapper.findClass(javaClassName()), this, (String)methodName.javaValue());
     }
 
     @Override
@@ -66,8 +65,7 @@ public class Java extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName + " " + arg1);
         
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.call(JavaWrapper.findClass(javaClassName()), this, (String)methodName.javaValue(), arg1);
     }
 
     @Override
@@ -75,8 +73,7 @@ public class Java extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName + " " + arg1 + " " + arg2);
         
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.call(JavaWrapper.findClass(javaClassName()), this, (String)methodName.javaValue(), arg1, arg2);
     }
 
     @Override
@@ -85,8 +82,7 @@ public class Java extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName + " " + arg1 + " " + arg2 + " " + arg3);
         
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.call(JavaWrapper.findClass(javaClassName()), this, (String)methodName.javaValue(), arg1, arg2, arg3);
     }
 
     @Override
@@ -94,8 +90,7 @@ public class Java extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName + " " + Arrays.toString(args));
         
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.call(JavaWrapper.findClass(javaClassName()), this, (String)methodName.javaValue(), args);
     }
 
     @Override
@@ -104,8 +99,7 @@ public class Java extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName + "(" + signature + ") " + arg1);
         
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.callSignature(JavaWrapper.findClass(javaClassName()), this, (String)methodName.javaValue(), (String)signature.javaValue(), arg1);
     }
 
     @Override
@@ -114,8 +108,7 @@ public class Java extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName + "(" + signature + ") " + arg1 + " " + arg2);
         
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.callSignature(JavaWrapper.findClass(javaClassName()), this, (String)methodName.javaValue(), (String)signature.javaValue(), arg1, arg2);
     }
 
     @Override
@@ -124,8 +117,7 @@ public class Java extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName + "(" + signature + ") " + arg1 + " " + arg2 + " " + arg3);
         
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.callSignature(JavaWrapper.findClass(javaClassName()), this, (String)methodName.javaValue(), (String)signature.javaValue(), arg1, arg2, arg3);
     }
 
     @Override
@@ -134,7 +126,6 @@ public class Java extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName + "(" + signature + ") " + Arrays.toString(args));
         
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.callSignature(JavaWrapper.findClass(javaClassName()), this, (String)methodName.javaValue(), (String)signature.javaValue(), args);
     }
 }

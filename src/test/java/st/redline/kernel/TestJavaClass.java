@@ -42,6 +42,16 @@ public class TestJavaClass {
         Assert.assertEquals(Boolean.TRUE, result.javaValue());
     }
     
+    public void testCallPrimitiveResult() {
+        
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("somePrimitiveMethod");
+        JavaClass jc = JavaClass.on(ClassForTestCall.class);
+        PrimObject result = jc.call(methodName);
+        
+        Assert.assertEquals(Boolean.TRUE, result.javaValue());
+    }
+    
     public void testCallVoid() {
         
         PrimObject methodName = new PrimObject();
@@ -63,6 +73,17 @@ public class TestJavaClass {
         Assert.assertEquals(Boolean.TRUE, result.javaValue());
     }
     
+    public void testCall1Arg() {
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("valueOf");
+        PrimObject arg1 = new PrimObject();
+        arg1.javaValue(System.out);
+        JavaClass jc = JavaClass.on(String.class);
+        PrimObject result = jc.call(methodName, arg1);
+        
+        Assert.assertEquals(System.out.toString(), result.javaValue());
+    }
+    
     public static class ClassForTestCall {
         
         public static void someVoidMethod() {
@@ -70,6 +91,10 @@ public class TestJavaClass {
         }
         
         public static Boolean someMethod() {
+            return true;
+        }
+        
+        public static boolean somePrimitiveMethod() {
             return true;
         }
     }
