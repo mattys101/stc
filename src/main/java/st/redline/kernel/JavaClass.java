@@ -63,8 +63,7 @@ public class JavaClass extends PrimObject implements JavaWrapper {
         if (LOG.isTraceEnabled())
             LOG.trace(this + " " + methodName);
 
-        // TODO Auto-generated method stub
-        return new PrimObject();
+        return this.call((Class<?>)javaValue(), this, (String)methodName.javaValue());
     }
 
     @Override
