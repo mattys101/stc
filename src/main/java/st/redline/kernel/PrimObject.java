@@ -20,10 +20,6 @@ public class PrimObject {
         return this.javaValue;
     }
 
-    public Object javaValue() {
-        return javaValue;
-    }
-
     public String toString() {
         return String.valueOf(javaValue);
     }
