@@ -41,7 +41,7 @@ public interface JavaWrapper {
             throws NoSuchMethodException {
         Log LOG = LogFactory.getLog(JavaWrapper.class);
         if (LOG.isTraceEnabled())
-            LOG.trace((exact ? "(exact) " : "(not exact) ") + (returnType == null ? "void" : returnType.getName()) + " " + aClass.getName() + "." + methodName + "(" + Arrays.toString(parameterTypes) + ")" );
+            LOG.trace("Searching " + (exact ? "(exact) " : "(not exact) ") + (returnType == null ? "void" : returnType.getName()) + " " + aClass.getName() + "." + methodName + "(" + Arrays.toString(parameterTypes) + ")" );
         
         Method match = null;
         for (Method m : aClass.getMethods()) {
@@ -59,6 +59,9 @@ public interface JavaWrapper {
         if (match == null) {
             throw new NoSuchMethodException((returnType == null ? "void" : returnType.getName()) + " " + aClass.getName() + "." + methodName + "(" + Arrays.toString(parameterTypes) + ")");
         }
+        
+        if (LOG.isTraceEnabled())
+            LOG.trace("Method found --- " + match.toString());
         
         return match;
     }
@@ -79,8 +82,26 @@ public interface JavaWrapper {
     }
 
     public static boolean isClassCompatible(Class<?> targetClass, Class<?> searchClass, boolean exact) {
-        if (exact) return targetClass.equals(searchClass);
+        // void is compatible with everything regardless
+        if (searchClass == void.class) return true;
+        else if (targetClass.isPrimitive()) return isClassPrimitiveCompatible(targetClass, searchClass, exact);
+        else if (exact) return targetClass.equals(searchClass);
         else return targetClass.isAssignableFrom(searchClass);
+    }
+
+    public static boolean isClassPrimitiveCompatible(Class<?> targetClass,
+                                                     Class<?> searchClass,
+                                                     boolean exact) {
+        try {
+            // XXX allow widening if not exact match?
+            // I am trying to make the behaviour as natural as expected, but is it too much perhaps?
+            return searchClass.getField("TYPE").get(null).equals(targetClass);
+        }
+        catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+               | SecurityException e) {
+            
+            return false;
+        }
     }
 
     public PrimObject javaClassName();
@@ -129,7 +150,7 @@ public interface JavaWrapper {
         for (int i = 0, len = parameterTypes.length ; i < len; i++) {
             Object o = unwrap(args[i]);
             javaArgs[i] = o;
-            parameterTypes[i] = o.getClass();
+            parameterTypes[i] = o == null ? void.class : o.getClass();
         }
 
         try {
@@ -144,7 +165,7 @@ public interface JavaWrapper {
             return method.getReturnType().equals(void.class) ? receiver : wrap(result);
         }
         catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            LOG.error("Couldn't find method", e);
+            LOG.error("Couldn't find appropriate method", e);
             // Maybe send doesNotUnderstand?
         }
 

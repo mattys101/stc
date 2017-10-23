@@ -84,6 +84,30 @@ public class TestJavaClass {
         Assert.assertEquals(System.out.toString(), result.javaValue());
     }
     
+    public void testCall1ArgMultipleMatchingMethods() {
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("valueOf");
+        PrimObject arg1 = new PrimObject();
+        arg1.javaValue(1);
+        JavaClass jc = JavaClass.on(String.class);
+        PrimObject result = jc.call(methodName, arg1);
+        
+        Assert.assertEquals(String.valueOf(1), result.javaValue());
+    }
+    
+    public void testCall1ArgNull() {
+        // This is an expected failure for the moment, until a proper strategy for 
+        // multiple matches is developed.
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("valueOf");
+        PrimObject arg1 = new PrimObject();
+        arg1.javaValue(null);
+        JavaClass jc = JavaClass.on(String.class);
+        PrimObject result = jc.call(methodName, arg1);
+        
+        Assert.assertEquals(String.valueOf((Object)null), result.javaValue());
+    }
+    
     public static class ClassForTestCall {
         
         public static void someVoidMethod() {
