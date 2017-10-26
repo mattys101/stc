@@ -108,6 +108,53 @@ public class TestJavaClass {
         Assert.assertEquals(String.valueOf((Object)null), result.javaValue());
     }
     
+    public void testCall1ArgWithSignature() {
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("valueOf");
+        PrimObject signature = new PrimObject();
+        signature.javaValue("(java.lang.Object)java.lang.String");
+        PrimObject arg1 = new PrimObject();
+        arg1.javaValue(System.out);
+        JavaClass jc = JavaClass.on(String.class);
+        PrimObject result = jc.callSignature(methodName, signature, arg1);
+        
+        Assert.assertEquals(System.out.toString(), result.javaValue());
+    }
+    
+    public void testCall1ArgNullWithSignature() {
+        // This should be successful as we can call the 'correct' method using the signature.
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("valueOf");
+        PrimObject arg1 = new PrimObject();
+        PrimObject signature = new PrimObject();
+        signature.javaValue("(java.lang.Object)java.lang.String");
+        arg1.javaValue(null);
+        JavaClass jc = JavaClass.on(String.class);
+        PrimObject result = jc.callSignature(methodName, signature, arg1);
+        
+        Assert.assertEquals(String.valueOf((Object)null), result.javaValue());
+    }
+    
+    public void testCallInvalidSignature() {
+        // This should be successful as we can call the 'correct' method using the signature.
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("valueOf");
+        PrimObject arg1 = new PrimObject();
+        PrimObject signature = new PrimObject();
+        signature.javaValue("java.lang.Object;java.lang.String");
+        arg1.javaValue(null);
+        JavaClass jc = JavaClass.on(String.class);
+
+        try {
+            jc.callSignature(methodName, signature, arg1);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+        
+    }
+    
     public static class ClassForTestCall {
         
         public static void someVoidMethod() {

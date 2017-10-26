@@ -5,8 +5,11 @@
 
 package st.redline.kernel;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,12 +26,17 @@ public interface JavaWrapper {
     
     public static Class<?> findClass(PrimObject className) {
 
+        return findClass((String) className.javaValue());
+    }
+
+    public static Class<?> findClass(String className) {
+
         Log LOG = LogFactory.getLog(JavaWrapper.class);
         if (LOG.isTraceEnabled())
             LOG.trace("Looking up class " + className);
 
         try {
-            return Class.forName((String) className.javaValue());
+            return Class.forName(className);
         }
         catch (ClassNotFoundException | ClassCastException e) {
             LOG.error("Couldn't find the class.", e);
@@ -103,6 +111,53 @@ public interface JavaWrapper {
             return false;
         }
     }
+    
+    public static Class<?> extractReturnType(String signature) {
+        
+        int endBracket = signature.indexOf(')');
+        if (endBracket == -1 || endBracket + 1 >= signature.length()) 
+            throw new RuntimeException("Invalid signature format. \\((<param type>;?)*\\)<return type>");
+        
+        String returnTypeName = signature.substring(endBracket + 1);
+        // XXX: handle primitive type mappings
+        return findClass(returnTypeName);
+    }
+
+    public static Class<?>[] extractParameterTypes(String signature) {
+        
+        StringReader read = new StringReader(signature);
+        ArrayList<Class<?>> types = new ArrayList<>();
+        try {
+            int next = read.read();
+            if (next != '(') throw new RuntimeException("Invalid signature format. \\((<param type>;?)*\\)<return type>");
+            
+            StringBuilder sb = new StringBuilder();
+            while (read.ready() && (next = read.read()) != ')') {
+                if (next == ';') {
+                    // XXX: handle primitive type mappings
+                    types.add(findClass(sb.toString()));
+                    sb = new StringBuilder();
+                }
+                else {
+                    sb.append((char)next);
+                }
+            }
+            
+            if (sb.length() > 0) {
+                // single type with no terminating ';'
+                // XXX: handle primitive type mappings
+                types.add(findClass(sb.toString()));
+                sb = new StringBuilder();
+            }
+        }
+        catch (IOException e) {
+            // Should never happen since we are reading a string.
+            throw new RuntimeException("Invalid signature format. \\((<param type>;?)*\\)<return type>");
+        }
+        
+        return types.toArray(new Class<?>[types.size()]);
+    }
+
 
     public PrimObject javaClassName();
     public PrimObject javaClassName(PrimObject className);
@@ -171,6 +226,42 @@ public interface JavaWrapper {
 
         return wrap(null);
     }
+    
+    public default PrimObject callSignature(Class<?> aClass, PrimObject receiver,
+                                            String methodName, String signature,
+                                            PrimObject... args) {
+        
+        Log LOG = LogFactory.getLog(JavaWrapper.class);
+        if (LOG.isTraceEnabled())
+            LOG.trace("Calling method " + aClass.getName() + "." + methodName + "(" + signature
+                      + ") " + Arrays.toString(args));
+        
+        Class<?> returnType = extractReturnType(signature);
+        Class<?>[] parameterTypes = extractParameterTypes(signature);
+        
+        Object[] javaArgs = new Object[args.length];
+        for (int i = 0, len = args.length ; i < len; i++) {
+            javaArgs[i] = unwrap(args[i]);
+        }
+        
+        try {
+            Method method = findMethod(aClass, methodName, true, returnType, parameterTypes);
+            // A side effect of this is that a Java object can (accidentally?) call a 
+            // static method. 
+            // XXX: As a general rule I am against this, but leaving as is for the moment.
+            Object result = method.invoke(receiver.javaValue(), javaArgs);
+            if (LOG.isTraceEnabled())
+                LOG.trace("Method result = " + String.valueOf(result));
+            
+            return method.getReturnType().equals(void.class) ? receiver : wrap(result);
+        }
+        catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            LOG.error("Couldn't find appropriate method", e);
+            // Maybe send doesNotUnderstand?
+        }
+
+        return wrap(null);
+    }
 
     public default Object unwrap(PrimObject o) {
         // XXX: need to handle any special cases
@@ -180,18 +271,6 @@ public interface JavaWrapper {
     public default PrimObject wrap(Object o) {
         // XXX: need to return Smalltalk nil and other special cases
         return o == null ? new PrimObject() : Java.on(o);
-    }
-
-    public default PrimObject callSignature(Class<?> aClass, Object reciever,
-                                            String methodName, String signature,
-                                            PrimObject... args) {
-
-        Log LOG = LogFactory.getLog(JavaWrapper.class);
-        if (LOG.isTraceEnabled())
-            LOG.trace("Calling method " + aClass.getName() + "." + methodName + "(" + signature
-                + ") " + Arrays.toString(args));
-
-        return new PrimObject();
     }
 
 }
