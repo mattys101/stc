@@ -392,6 +392,35 @@ public class TestJavaClass {
         }
     }
     
+    public void testJavaClassForJavaClass() {
+        // Since we cannot automatically infer when a PrimObject should be unwrapped or not
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("forClass");
+        PrimObject className = new PrimObject();
+        className.javaValue(String.class.getName());
+        JavaClass jc = JavaClass.on(JavaClass.class);
+        
+        PrimObject stringJC = jc.call(methodName, className);
+        
+        Assert.assertEquals(null, stringJC.javaValue());
+    }
+    
+    public void testJavaClassForJavaClassSignature() {
+        // Need to explicitly provide the signature for methods that take PrimObjects
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("forClass");
+        PrimObject signature = new PrimObject();
+        signature.javaValue("(st.redline.kernel.PrimObject)st.redline.kernel.JavaClass");
+        PrimObject className = new PrimObject();
+        className.javaValue(String.class.getName());
+        JavaClass jc = JavaClass.on(JavaClass.class);
+        
+        JavaClass stringJC = (JavaClass) jc.callSignature(methodName, signature, className);
+        
+        Assert.assertEquals(String.class.getName(), stringJC.javaClassName().javaValue());
+        Assert.assertEquals(String.class, stringJC.javaValue());
+    }
+    
     public static class ClassForTestCall {
         
         public static void someVoidMethod() {

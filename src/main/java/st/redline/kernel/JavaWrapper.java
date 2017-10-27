@@ -228,8 +228,6 @@ public interface JavaWrapper {
             LOG.trace("Calling " + aClass.getName() + "." + methodName + " "
                 + Arrays.toString(args));
         
-        // XXX: think about how we will deal with calls that actually take PrimObject. It 
-        // might be that you would 'have' to use the callSignature variants to specify that
         Object[] javaArgs = new Object[args.length];
         Class<?>[] parameterTypes = new Class[args.length];
         for (int i = 0, len = parameterTypes.length ; i < len; i++) {
@@ -275,9 +273,14 @@ public interface JavaWrapper {
         Class<?> returnType = extractReturnType(signature);
         Class<?>[] parameterTypes = extractParameterTypes(signature);
         
+        if (LOG.isTraceEnabled())
+            LOG.trace("Types: return " + returnType + " || params " + Arrays.toString(parameterTypes));
+        
         Object[] javaArgs = new Object[args.length];
         for (int i = 0, len = args.length ; i < len; i++) {
-            javaArgs[i] = unwrap(args[i]);
+            javaArgs[i] = PrimObject.class.isAssignableFrom(parameterTypes[i])
+                    ? args[i]
+                    : unwrap(args[i]);
         }
         
         try {
@@ -312,7 +315,9 @@ public interface JavaWrapper {
     
     public default PrimObject wrap(Object o) {
         // XXX: need to return Smalltalk nil and other special cases
-        return o == null ? new PrimObject() : Java.on(o);
+        if (o instanceof PrimObject) return (PrimObject) o;
+        else if (o == null) return new PrimObject();
+        else return Java.on(o);
     }
 
 }
