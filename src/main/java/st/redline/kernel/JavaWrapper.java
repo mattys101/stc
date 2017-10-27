@@ -10,11 +10,13 @@ import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * Note: Exceptions are currently being caught and ignored. The plan is to raise the
@@ -23,6 +25,27 @@ import edu.emory.mathcs.backport.java.util.Arrays;
  * @author Matt Selway
  */
 public interface JavaWrapper {
+    
+    public static final Map<String, Class<?>> PRIMITIVE_TYPES = primitiveTypes();
+    
+    public static Map<String, Class<?>> primitiveTypes() {
+
+        if (PRIMITIVE_TYPES == null) {
+            // Initialise the Java primitive class mappings.
+            Map<String, Class<?>> map = new HashMap<>(12);
+            map.put("char", char.class);
+            map.put("boolean", boolean.class);
+            map.put("byte", byte.class);
+            map.put("short", short.class);
+            map.put("int", int.class);
+            map.put("long", long.class);
+            map.put("float", float.class);
+            map.put("double", double.class);
+            map.put("void", void.class);
+            return Collections.unmodifiableMap(map);
+        }
+        return PRIMITIVE_TYPES;
+    }
     
     public static Class<?> findClass(PrimObject className) {
 
@@ -34,14 +57,15 @@ public interface JavaWrapper {
         Log LOG = LogFactory.getLog(JavaWrapper.class);
         if (LOG.isTraceEnabled())
             LOG.trace("Looking up class " + className);
-
+        
         try {
-            return Class.forName(className);
+            Class<?> result = PRIMITIVE_TYPES.getOrDefault(className, null);
+            return result == null ? Class.forName(className) : result;
         }
         catch (ClassNotFoundException | ClassCastException e) {
             LOG.error("Couldn't find the class.", e);
         }
-
+        
         return null;
     }
     
@@ -102,8 +126,9 @@ public interface JavaWrapper {
                                                      boolean exact) {
         try {
             // XXX allow widening if not exact match?
-            // I am trying to make the behaviour as natural as expected, but is it too much perhaps?
-            return searchClass.getField("TYPE").get(null).equals(targetClass);
+            // I am trying to make the behaviour as natural as expected, but is that too much perhaps?
+            return targetClass.equals(searchClass) ||
+                    targetClass.equals(searchClass.getField("TYPE").get(null));
         }
         catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
                | SecurityException e) {
@@ -119,45 +144,50 @@ public interface JavaWrapper {
             throw new RuntimeException("Invalid signature format. \\((<param type>;?)*\\)<return type>");
         
         String returnTypeName = signature.substring(endBracket + 1);
-        // XXX: handle primitive type mappings
         return findClass(returnTypeName);
     }
-
+    
     public static Class<?>[] extractParameterTypes(String signature) {
         
-        StringReader read = new StringReader(signature);
-        ArrayList<Class<?>> types = new ArrayList<>();
         try {
-            int next = read.read();
-            if (next != '(') throw new RuntimeException("Invalid signature format. \\((<param type>;?)*\\)<return type>");
+            StringReader read = new StringReader(signature);
+            ArrayList<Class<?>> types = new ArrayList<>();
+            int next = -1;
+            if ((next = read.read()) != '(') throw new RuntimeException("Invalid signature format. \\((<param type>;?)*\\)<return type>");
             
-            StringBuilder sb = new StringBuilder();
-            while (read.ready() && (next = read.read()) != ')') {
-                if (next == ';') {
-                    // XXX: handle primitive type mappings
-                    types.add(findClass(sb.toString()));
-                    sb = new StringBuilder();
-                }
-                else {
-                    sb.append((char)next);
-                }
-            }
+            read.mark(1); // for peeking (I can't believe a StringReader can't peek !?!)
+            if ((next = read.read()) == ')') return new Class<?>[0];
+            read.reset();
+
+            do {
+                types.add(readNextType(read));
+            } while ((next = read.read()) != ')' && next > -1);
             
-            if (sb.length() > 0) {
-                // single type with no terminating ';'
-                // XXX: handle primitive type mappings
-                types.add(findClass(sb.toString()));
-                sb = new StringBuilder();
-            }
+            return types.toArray(new Class<?>[types.size()]);
         }
         catch (IOException e) {
             // Should never happen since we are reading a string.
             throw new RuntimeException("Invalid signature format. \\((<param type>;?)*\\)<return type>");
         }
-        
-        return types.toArray(new Class<?>[types.size()]);
     }
-
+    
+    public static Class<?> readNextType(StringReader read) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int next = -1;
+        read.mark(1);
+        
+        while (read.ready() && (next = read.read()) != ')' && next != ';' && next > -1) {
+            sb.append((char)next);
+            read.mark(1);
+        }
+        
+        read.reset();
+        
+        Class<?> type = findClass(sb.toString());
+        if (type == null || type == void.class) throw new RuntimeException("Invalid signature format. \\((<param type>;?)*\\)<return type>");
+    
+        return type;
+    }
 
     public PrimObject javaClassName();
     public PrimObject javaClassName(PrimObject className);
@@ -219,9 +249,15 @@ public interface JavaWrapper {
             
             return method.getReturnType().equals(void.class) ? receiver : wrap(result);
         }
-        catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        catch (NoSuchMethodException | SecurityException | IllegalAccessException e) {
             LOG.error("Couldn't find appropriate method", e);
             // Maybe send doesNotUnderstand?
+        }
+        catch (IllegalArgumentException e) {
+            LOG.error("Receiver or method args invalid.", e);
+        }
+        catch (InvocationTargetException e) {
+            LOG.error("Error occurred during method execution.", e);
         }
 
         return wrap(null);
@@ -255,9 +291,15 @@ public interface JavaWrapper {
             
             return method.getReturnType().equals(void.class) ? receiver : wrap(result);
         }
-        catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        catch (NoSuchMethodException | SecurityException | IllegalAccessException e) {
             LOG.error("Couldn't find appropriate method", e);
             // Maybe send doesNotUnderstand?
+        }
+        catch (IllegalArgumentException e) {
+            LOG.error("Receiver or method args invalid.", e);
+        }
+        catch (InvocationTargetException e) {
+            LOG.error("Error occurred during method execution.", e);
         }
 
         return wrap(null);

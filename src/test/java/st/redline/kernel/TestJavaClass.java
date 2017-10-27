@@ -62,6 +62,18 @@ public class TestJavaClass {
         Assert.assertEquals(jc, result);
     }
     
+    public void testCallSignatureVoid() {
+        
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("someVoidMethod");
+        PrimObject signature = new PrimObject();
+        signature.javaValue("()void");
+        JavaClass jc = JavaClass.on(ClassForTestCall.class);
+        PrimObject result = jc.callSignature(methodName, signature);
+        
+        Assert.assertEquals(jc, result);
+    }
+    
     public void testCallInstanceCallingStatic() {
         
         // Need to determine if this is desired behaviour
@@ -121,6 +133,19 @@ public class TestJavaClass {
         Assert.assertEquals(System.out.toString(), result.javaValue());
     }
     
+    public void testCall1ArgWithPrimitiveSignature() {
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("valueOf");
+        PrimObject signature = new PrimObject();
+        signature.javaValue("(int)java.lang.String");
+        PrimObject arg1 = new PrimObject();
+        arg1.javaValue(1);
+        JavaClass jc = JavaClass.on(String.class);
+        PrimObject result = jc.callSignature(methodName, signature, arg1);
+        
+        Assert.assertEquals("1", result.javaValue());
+    }
+    
     public void testCall1ArgNullWithSignature() {
         // This should be successful as we can call the 'correct' method using the signature.
         PrimObject methodName = new PrimObject();
@@ -135,24 +160,236 @@ public class TestJavaClass {
         Assert.assertEquals(String.valueOf((Object)null), result.javaValue());
     }
     
-    public void testCallInvalidSignature() {
-        // This should be successful as we can call the 'correct' method using the signature.
+    public void testCall2ArgWithSignature() {
         PrimObject methodName = new PrimObject();
-        methodName.javaValue("valueOf");
+        methodName.javaValue("compare");
         PrimObject arg1 = new PrimObject();
+        arg1.javaValue(1);
+        PrimObject arg2 = new PrimObject();
+        arg2.javaValue(2);
         PrimObject signature = new PrimObject();
-        signature.javaValue("java.lang.Object;java.lang.String");
-        arg1.javaValue(null);
-        JavaClass jc = JavaClass.on(String.class);
-
+        signature.javaValue("(int;int)int");
+        JavaClass jc = JavaClass.on(Integer.class); 
+        PrimObject result = jc.callSignature(methodName, signature, arg1, arg2);
+        
+        Assert.assertEquals(Integer.compare(1, 2), result.javaValue());
+    }
+    
+    public void testCallAllPrimitives() {
+        PrimObject methodName = new PrimObject();
+        methodName.javaValue("somePrimitiveSigMethod");
+        PrimObject arg1 = new PrimObject();
+        arg1.javaValue(true);
+        PrimObject arg2 = new PrimObject();
+        arg2.javaValue('c');
+        PrimObject arg3 = new PrimObject();
+        arg3.javaValue((byte)1);
+        PrimObject arg4 = new PrimObject();
+        arg4.javaValue(Short.valueOf((short)(Byte.MAX_VALUE + 1)));
+        PrimObject arg5 = new PrimObject();
+        arg5.javaValue(Integer.valueOf(Short.MAX_VALUE + 1));
+        PrimObject arg6 = new PrimObject();
+        arg6.javaValue(Long.valueOf(Integer.MAX_VALUE + 1));
+        PrimObject arg7 = new PrimObject();
+        arg7.javaValue(1.0f);
+        PrimObject arg8 = new PrimObject();
+        arg8.javaValue(10.0d);
+        PrimObject signature = new PrimObject();
+        signature.javaValue("(boolean;char;byte;short;int;long;float;double)void");
+        JavaClass jc = JavaClass.on(ClassForTestCall.class); 
+        PrimObject result = jc.callSignature(methodName, signature, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        
+        Assert.assertEquals(jc, result);
+    }
+    
+    public void testInvalidSignature() {
+        String signature = "java.lang.Object";
         try {
-            jc.callSignature(methodName, signature, arg1);
+            JavaWrapper.extractReturnType(signature);
             Assert.fail("Exception not thrown");
         }
         catch (RuntimeException e) {
             Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
         }
         
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+    }
+    
+    public void testCallInvalidSignature2() {
+        String signature = "()";
+        try {
+            JavaWrapper.extractReturnType(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+        
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+        }
+        catch (RuntimeException e) {
+            Assert.fail("Empty parameters types should be valid.");
+        }
+    }
+    
+    public void testCallInvalidSignature3() {
+        String signature = "";
+        try {
+            JavaWrapper.extractReturnType(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+        
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+    }
+    
+    public void testCallInvalidSignature4() {
+        String signature = "(";
+        try {
+            JavaWrapper.extractReturnType(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+        
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+    }
+    
+    public void testCallInvalidSignature5() {
+        String signature = "(java.lang.String";
+        try {
+            JavaWrapper.extractReturnType(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+        
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+//            Assert.fail("Exception not thrown");
+            // Eh, don't really care about this.
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+    }
+    
+    public void testCallInvalidSignatire6() {
+        String signature = "(java.lang.Object;)java.lang.String";
+        try {
+            Class<?> result = JavaWrapper.extractReturnType(signature);
+            Assert.assertEquals(String.class, result);
+        }
+        catch (RuntimeException e) {
+            Assert.fail("Return parameter should be valid.");
+        }
+        
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+    }
+    
+    public void testCallInvalidSignatureVoidParameter() {
+        String signature = "(void)java.lang.String";
+        try {
+            Class<?> result = JavaWrapper.extractReturnType(signature);
+            Assert.assertEquals(String.class, result);
+        }
+        catch (RuntimeException e) {
+            Assert.fail("Return parameter should be valid.");
+        }
+        
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+    }
+    
+    public void testCallInvalidSignatureEmptyParameter() {
+        String signature = "(java.lang.String;;)void";
+        try {
+            Class<?> result = JavaWrapper.extractReturnType(signature);
+            Assert.assertEquals(void.class, result);
+        }
+        catch (RuntimeException e) {
+            Assert.fail("Return parameter should be valid.");
+        }
+        
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+    }
+    
+    public void testCallInvalidSignatureEmptyFirstParameter() {
+        String signature = "(;java.lang.String)void";
+        try {
+            Class<?> result = JavaWrapper.extractReturnType(signature);
+            Assert.assertEquals(void.class, result);
+        }
+        catch (RuntimeException e) {
+            Assert.fail("Return parameter should be valid.");
+        }
+        
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
+    }
+    
+    public void testCallInvalidSignatureEmptyMiddleParameter() {
+        String signature = "(java.lang.String;;java.lang.String)void";
+        try {
+            Class<?> result = JavaWrapper.extractReturnType(signature);
+            Assert.assertEquals(void.class, result);
+        }
+        catch (RuntimeException e) {
+            Assert.fail("Return parameter should be valid.");
+        }
+        
+        try {
+            JavaWrapper.extractParameterTypes(signature);
+            Assert.fail("Exception not thrown");
+        }
+        catch (RuntimeException e) {
+            Assert.assertEquals("Invalid signature format. \\((<param type>;?)*\\)<return type>", e.getMessage());
+        }
     }
     
     public static class ClassForTestCall {
@@ -167,6 +404,9 @@ public class TestJavaClass {
         
         public static boolean somePrimitiveMethod() {
             return true;
+        }
+        
+        public static void somePrimitiveSigMethod(boolean b, char c, byte bt, short s, int i, long l, float f, double d) {
         }
     }
 }
