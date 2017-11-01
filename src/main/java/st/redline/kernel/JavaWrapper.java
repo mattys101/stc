@@ -7,6 +7,8 @@ package st.redline.kernel;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -69,6 +71,31 @@ public interface JavaWrapper {
         return null;
     }
     
+    public static Constructor<?> findConstructor(Class<?> aClass, boolean exact, Class<?>... parameterTypes)
+            throws NoSuchMethodException {
+        Log LOG = LogFactory.getLog(JavaWrapper.class);
+        if (LOG.isTraceEnabled())
+            LOG.trace("Searching " + (exact ? "(exact) " : "(not exact) ") + aClass.getName() + "(" + Arrays.toString(parameterTypes) + ")" );
+        
+        Constructor<?> match = null;
+        for (Constructor<?> c : aClass.getConstructors()) {
+            if (parameterTypes.length == c.getParameterCount() &&
+                    classesCompatible(c.getParameterTypes(), parameterTypes, exact)) {
+                if (match == null) match = c;
+                else match = (Constructor<?>)moreSpecificMethod(match, c);
+            }
+        }
+        
+        if (match == null) {
+            throw new NoSuchMethodException(aClass.getName() + "(" + Arrays.toString(parameterTypes) + ")");
+        }
+        
+        if (LOG.isTraceEnabled())
+            LOG.trace("Constructor found --- " + match.toString());
+        
+        return match;
+    }
+    
     public static Method findMethod(Class<?> aClass, String methodName, boolean exact, Class<?> returnType, Class<?>... parameterTypes)
             throws NoSuchMethodException {
         Log LOG = LogFactory.getLog(JavaWrapper.class);
@@ -82,7 +109,7 @@ public interface JavaWrapper {
                    if (parameterTypes.length == m.getParameterCount() &&
                            classesCompatible(m.getParameterTypes(), parameterTypes, exact)) {
                        if (match == null) match = m;
-                       else match = moreSpecificMethod(match, m);
+                       else match = (Method)moreSpecificMethod(match, m);
                    }
                }
             }
@@ -98,12 +125,14 @@ public interface JavaWrapper {
         return match;
     }
 
-    public static Method moreSpecificMethod(Method match, Method m) {
+    public static Executable moreSpecificMethod(Executable m1, Executable m2) {
         // XXX: determine which method is more specific
+        // Should be mostly the same for Constructors and Methods. Just need to include 
+        // return type for Methods.
         Log LOG = LogFactory.getLog(JavaWrapper.class);
         if (LOG.isTraceEnabled())
-            LOG.trace(match.toString() + " <-> " + m.toString());
-        return m;
+            LOG.trace(m1.toString() + " <-> " + m2.toString());
+        return m2;
     }
 
     public static boolean classesCompatible(Class<?>[] targetClasses, Class<?>[] searchClasses, boolean exact) {
@@ -217,6 +246,83 @@ public interface JavaWrapper {
                       e);
         }
 
+        return null;
+    }
+    
+    public default Object newInstanceOf(Class<?> aClass, PrimObject... args) {
+        
+        Log LOG = LogFactory.getLog(JavaWrapper.class);
+        if (LOG.isTraceEnabled())
+            LOG.trace("Instantiating class " + aClass.getName() + " with args " + Arrays.toString(args));
+        
+        Object[] javaArgs = new Object[args.length];
+        Class<?>[] parameterTypes = new Class[args.length];
+        for (int i = 0, len = parameterTypes.length ; i < len; i++) {
+            Object o = unwrap(args[i]);
+            javaArgs[i] = o;
+            parameterTypes[i] = o == null ? void.class : o.getClass();
+        }
+        
+        try {
+            Constructor<?> constructor = findConstructor(aClass, false, parameterTypes);
+            return constructor.newInstance(javaArgs);
+        }
+        catch (InstantiationException e) {
+            LOG.error("Couldn't instantiate the class. No default constructor or it is hidden.",
+                      e);
+        }
+        catch (NoSuchMethodException | SecurityException | IllegalAccessException e) {
+            LOG.error("Couldn't find appropriate method", e);
+            // Maybe send doesNotUnderstand?
+        }
+        catch (IllegalArgumentException e) {
+            LOG.error("Receiver or method args invalid.", e);
+        }
+        catch (InvocationTargetException e) {
+            LOG.error("Error occurred during method execution.", e);
+        }
+        
+        return null;
+    }
+    
+    public default Object newInstanceOf(Class<?> aClass, String signature, PrimObject... args) {
+        
+        Log LOG = LogFactory.getLog(JavaWrapper.class);
+        if (LOG.isTraceEnabled())
+            LOG.trace("Instantiating class " + aClass.getName() + "(" + signature
+                      + ") " + " with args " + Arrays.toString(args));
+        
+        Class<?>[] parameterTypes = extractParameterTypes(signature);
+        
+        if (LOG.isTraceEnabled())
+            LOG.trace("Types: params " + Arrays.toString(parameterTypes));
+        
+        Object[] javaArgs = new Object[args.length];
+        for (int i = 0, len = args.length ; i < len; i++) {
+            javaArgs[i] = PrimObject.class.isAssignableFrom(parameterTypes[i])
+                    ? args[i]
+                    : unwrap(args[i]);
+        }
+        
+        try {
+            Constructor<?> constructor = findConstructor(aClass, true, parameterTypes);
+            return constructor.newInstance(javaArgs);
+        }
+        catch (InstantiationException e) {
+            LOG.error("Couldn't instantiate the class. No default constructor or it is hidden.",
+                      e);
+        }
+        catch (NoSuchMethodException | SecurityException | IllegalAccessException e) {
+            LOG.error("Couldn't find appropriate method", e);
+            // Maybe send doesNotUnderstand?
+        }
+        catch (IllegalArgumentException e) {
+            LOG.error("Receiver or method args invalid.", e);
+        }
+        catch (InvocationTargetException e) {
+            LOG.error("Error occurred during method execution.", e);
+        }
+        
         return null;
     }
 

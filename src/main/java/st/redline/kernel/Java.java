@@ -26,6 +26,70 @@ public class Java extends PrimObject implements JavaWrapper {
         return instance;
     }
     
+    public static Java newInstance(PrimObject className, PrimObject arg1) {
+        Class<?> aClass = JavaWrapper.findClass(className);
+        Java instance = new Java();
+        instance.javaValue(instance.newInstanceOf(aClass, arg1));
+        instance.javaClassName(className);
+        return instance;
+    }
+    
+    public static Java newInstance(PrimObject className, PrimObject arg1, PrimObject arg2) {
+        Class<?> aClass = JavaWrapper.findClass(className);
+        Java instance = new Java();
+        instance.javaValue(instance.newInstanceOf(aClass, arg1, arg2));
+        instance.javaClassName(className);
+        return instance;
+    }
+    
+    public static Java newInstance(PrimObject className, PrimObject arg1, PrimObject arg2, PrimObject arg3) {
+        Class<?> aClass = JavaWrapper.findClass(className);
+        Java instance = new Java();
+        instance.javaValue(instance.newInstanceOf(aClass, arg1, arg2, arg3));
+        instance.javaClassName(className);
+        return instance;
+    }
+    
+    public static Java newInstance(PrimObject className, PrimObject... args) {
+        Class<?> aClass = JavaWrapper.findClass(className);
+        Java instance = new Java();
+        instance.javaValue(instance.newInstanceOf(aClass, args));
+        instance.javaClassName(className);
+        return instance;
+    }
+    
+    public static Java newInstanceSignature(PrimObject className, PrimObject signature, PrimObject arg1) {
+        Class<?> aClass = JavaWrapper.findClass(className);
+        Java instance = new Java();
+        instance.javaValue(instance.newInstanceOf(aClass, (String)signature.javaValue(), arg1));
+        instance.javaClassName(className);
+        return instance;
+    }
+    
+    public static Java newInstanceSignature(PrimObject className, PrimObject signature, PrimObject arg1, PrimObject arg2) {
+        Class<?> aClass = JavaWrapper.findClass(className);
+        Java instance = new Java();
+        instance.javaValue(instance.newInstanceOf(aClass, (String)signature.javaValue(), arg1, arg2));
+        instance.javaClassName(className);
+        return instance;
+    }
+    
+    public static Java newInstanceSignature(PrimObject className, PrimObject signature, PrimObject arg1, PrimObject arg2, PrimObject arg3) {
+        Class<?> aClass = JavaWrapper.findClass(className);
+        Java instance = new Java();
+        instance.javaValue(instance.newInstanceOf(aClass, (String)signature.javaValue(), arg1, arg2, arg3));
+        instance.javaClassName(className);
+        return instance;
+    }
+    
+    public static Java newInstanceSignature(PrimObject className, PrimObject signature, PrimObject... args) {
+        Class<?> aClass = JavaWrapper.findClass(className);
+        Java instance = new Java();
+        instance.javaValue(instance.newInstanceOf(aClass, (String)signature.javaValue(), args));
+        instance.javaClassName(className);
+        return instance;
+    }
+    
     public static Java on(Object o) {
         if (o == null) return null; // XXX: should be 'nil'
         if (o instanceof Java) return (Java) o; // avoid nested Java objects
