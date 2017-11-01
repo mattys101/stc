@@ -1,6 +1,7 @@
 
 package st.redline.kernel;
 
+
 import junit.framework.Assert;
 
 public class TestJavaClass {
@@ -30,6 +31,24 @@ public class TestJavaClass {
         
         Assert.assertEquals(String.class.getName(), instance.javaClassName().javaValue());
         Assert.assertEquals("", instance.javaValue());
+    }
+    
+    public void testNewInstanceWithArgs() {
+        
+        JavaClass jc = JavaClass.on(String.class);
+        Java instance = (Java)jc.newInstance(Java.on(new char[]{'a', 'b', 'c', 'd'}));
+        
+        Assert.assertEquals(String.class.getName(), instance.javaClassName().javaValue());
+        Assert.assertEquals("abcd", instance.javaValue());
+    }
+    
+    public void testNewInstanceWithSignature() {
+        
+        JavaClass jc = JavaClass.on(String.class);
+        Java instance = (Java)jc.newInstanceSignature(Java.on("(java.lang.String)"), Java.on("abcd"));
+        
+        Assert.assertEquals(String.class.getName(), instance.javaClassName().javaValue());
+        Assert.assertEquals("abcd", instance.javaValue());
     }
 
     public void testCall() {

@@ -53,9 +53,19 @@ public class JavaClass extends PrimObject implements JavaWrapper {
         return this.javaClassName;
     }
     
-    // Will just be called #new: in Smalltalk
-    public PrimObject newInstance() {
+    // Will just be called #new in Smalltalk
+    public Java newInstance() {
         return Java.on(this.newInstanceOf((Class<?>)javaValue()));
+    }
+    
+    // Will just be called #newWithArgs: in Smalltalk
+    public Java newInstance(PrimObject... args) {
+        return Java.on(this.newInstanceOf((Class<?>)javaValue(), args));
+    }
+    
+    // Will just be called #newFromSignature:withArgs: in Smalltalk
+    public Java newInstanceSignature(PrimObject signature, PrimObject... args) {
+        return Java.on(this.newInstanceOf((Class<?>)javaValue(), (String)signature.javaValue(), args));
     }
 
     @Override
