@@ -157,7 +157,7 @@ public interface JavaWrapper {
             // XXX allow widening if not exact match?
             // I am trying to make the behaviour as natural as expected, but is that too much perhaps?
             return targetClass.equals(searchClass) ||
-                    targetClass.equals(searchClass.getField("TYPE").get(null));
+                    (!exact && targetClass.equals(searchClass.getField("TYPE").get(null)));
         }
         catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
                | SecurityException e) {
