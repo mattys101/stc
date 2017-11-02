@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -231,6 +232,8 @@ public interface JavaWrapper {
     public PrimObject callSignature(PrimObject methodName, PrimObject signature, PrimObject arg1, PrimObject arg2);
     public PrimObject callSignature(PrimObject methodName, PrimObject signature, PrimObject arg1, PrimObject arg2, PrimObject arg3);
     public PrimObject callSignature(PrimObject methodName, PrimObject signature, PrimObject... args);
+    
+    public PrimObject field(PrimObject fieldName);
 
     public default Object newInstanceOf(Class<?> aClass) {
 
@@ -411,6 +414,27 @@ public interface JavaWrapper {
             LOG.error("Error occurred during method execution.", e);
         }
 
+        return wrap(null);
+    }
+    
+    public default PrimObject field(Class<?> aClass, PrimObject receiver, String fieldName) {
+        Log LOG = LogFactory.getLog(JavaWrapper.class);
+        if (LOG.isTraceEnabled())
+            LOG.trace("Retrieving field " + aClass.getName() + "." + fieldName);
+        
+        try {
+            // XXX similar to methods, this allows instances to retrieve static fields
+            Field field = aClass.getField(fieldName);
+            
+            if (LOG.isTraceEnabled())
+                LOG.trace("Field = " + field);
+            
+            return wrap(field.get(receiver.javaValue()));
+        }
+        catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            LOG.error("Couldn't find appropriate field", e);
+        }
+        
         return wrap(null);
     }
 

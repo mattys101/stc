@@ -456,6 +456,37 @@ public class TestJavaClass {
         Assert.assertEquals(org.apache.commons.logging.LogFactory.getLog(org.apache.commons.logging.LogFactory.class), log.javaValue());
     }
     
+    public void testGetField() {
+        PrimObject className = new PrimObject();
+        className.javaValue(System.class.getName());
+        JavaClass jc = JavaClass.forClass(className);
+        
+        PrimObject fieldName = new PrimObject();
+        fieldName.javaValue("out");
+        
+        PrimObject fieldName2 = new PrimObject();
+        fieldName2.javaValue("outsy");
+        
+        PrimObject out = jc.field(fieldName);
+        Assert.assertEquals(System.out, out.javaValue());
+        
+        out = jc.field(fieldName2);
+        Assert.assertEquals(null, out.javaValue());
+    }
+    
+    public void testGetStaticField() {
+        PrimObject className = new PrimObject();
+        className.javaValue(Integer.class.getName());
+        JavaClass jc = JavaClass.forClass(className);
+        Java instance = jc.newInstance(Java.on(10));
+        
+        PrimObject fieldName = new PrimObject();
+        fieldName.javaValue("MAX_VALUE");
+        
+        PrimObject out = instance.field(fieldName);
+        Assert.assertEquals(Integer.MAX_VALUE, out.javaValue());
+    }
+    
     public static class ClassForTestCall {
         
         public static void someVoidMethod() {

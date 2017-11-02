@@ -144,4 +144,12 @@ public class JavaClass extends PrimObject implements JavaWrapper {
         
         return this.callSignature((Class<?>)javaValue(), this, (String)methodName.javaValue(), (String)signature.javaValue(), args);
     }
+
+    @Override
+    public PrimObject field(PrimObject fieldName) {
+        if (LOG.isTraceEnabled())
+            LOG.trace(this + "." + fieldName);
+        
+        return this.field((Class<?>)javaValue(), this, (String)fieldName.javaValue());
+    }
 }

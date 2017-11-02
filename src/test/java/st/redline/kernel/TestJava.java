@@ -217,9 +217,28 @@ public class TestJava {
         
     }
     
+    public void testGetField() {
+        PrimObject className = new PrimObject();
+        className.javaValue(ClassForConstructorTest.class.getName()); 
+        Java jc = Java.newInstance(className);
+        
+        PrimObject fieldName = new PrimObject();
+        fieldName.javaValue("arg1");
+        
+        PrimObject fieldName2 = new PrimObject();
+        fieldName2.javaValue("arg2");
+        
+        PrimObject result = jc.field(fieldName);
+        
+        Assert.assertEquals("unassigned", result.javaValue());
+        
+        result = jc.field(fieldName2);
+        Assert.assertEquals(null, result.javaValue());
+    }
+    
     public static class ClassForConstructorTest {
         
-        private Object arg1;
+        public Object arg1;
         private Object arg2;
         private Object arg3;
         private Object arg4;
