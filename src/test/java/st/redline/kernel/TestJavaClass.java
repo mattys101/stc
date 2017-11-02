@@ -440,6 +440,22 @@ public class TestJavaClass {
         Assert.assertEquals(String.class, stringJC.javaValue());
     }
     
+    public void testJavaClassAsValue() {
+        PrimObject className = new PrimObject();
+        className.javaValue("org.apache.commons.logging.LogFactory");
+        JavaClass logFactory = JavaClass.forClass(className);
+        
+        PrimObject getLogMethod = new PrimObject();
+        getLogMethod.javaValue("getLog");
+        
+        PrimObject signature = new PrimObject();
+        signature.javaValue("(java.lang.Class)org.apache.commons.logging.Log");
+        
+        PrimObject log = logFactory.callSignature(getLogMethod, signature, logFactory);
+        
+        Assert.assertEquals(org.apache.commons.logging.LogFactory.getLog(org.apache.commons.logging.LogFactory.class), log.javaValue());
+    }
+    
     public static class ClassForTestCall {
         
         public static void someVoidMethod() {
