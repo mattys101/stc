@@ -21,6 +21,7 @@ public class Java extends PrimObject implements JavaWrapper {
     public static Java newInstance(PrimObject className) {
         Class<?> aClass = JavaWrapper.findClass(className);
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(instance.newInstanceOf(aClass));
         instance.javaClassName(className);
         return instance;
@@ -29,6 +30,7 @@ public class Java extends PrimObject implements JavaWrapper {
     public static Java newInstance(PrimObject className, PrimObject arg1) {
         Class<?> aClass = JavaWrapper.findClass(className);
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(instance.newInstanceOf(aClass, arg1));
         instance.javaClassName(className);
         return instance;
@@ -37,6 +39,7 @@ public class Java extends PrimObject implements JavaWrapper {
     public static Java newInstance(PrimObject className, PrimObject arg1, PrimObject arg2) {
         Class<?> aClass = JavaWrapper.findClass(className);
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(instance.newInstanceOf(aClass, arg1, arg2));
         instance.javaClassName(className);
         return instance;
@@ -45,6 +48,7 @@ public class Java extends PrimObject implements JavaWrapper {
     public static Java newInstance(PrimObject className, PrimObject arg1, PrimObject arg2, PrimObject arg3) {
         Class<?> aClass = JavaWrapper.findClass(className);
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(instance.newInstanceOf(aClass, arg1, arg2, arg3));
         instance.javaClassName(className);
         return instance;
@@ -53,6 +57,7 @@ public class Java extends PrimObject implements JavaWrapper {
     public static Java newInstance(PrimObject className, PrimObject... args) {
         Class<?> aClass = JavaWrapper.findClass(className);
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(instance.newInstanceOf(aClass, args));
         instance.javaClassName(className);
         return instance;
@@ -61,6 +66,7 @@ public class Java extends PrimObject implements JavaWrapper {
     public static Java newInstanceSignature(PrimObject className, PrimObject signature, PrimObject arg1) {
         Class<?> aClass = JavaWrapper.findClass(className);
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(instance.newInstanceOf(aClass, (String)signature.javaValue(), arg1));
         instance.javaClassName(className);
         return instance;
@@ -69,6 +75,7 @@ public class Java extends PrimObject implements JavaWrapper {
     public static Java newInstanceSignature(PrimObject className, PrimObject signature, PrimObject arg1, PrimObject arg2) {
         Class<?> aClass = JavaWrapper.findClass(className);
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(instance.newInstanceOf(aClass, (String)signature.javaValue(), arg1, arg2));
         instance.javaClassName(className);
         return instance;
@@ -77,6 +84,7 @@ public class Java extends PrimObject implements JavaWrapper {
     public static Java newInstanceSignature(PrimObject className, PrimObject signature, PrimObject arg1, PrimObject arg2, PrimObject arg3) {
         Class<?> aClass = JavaWrapper.findClass(className);
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(instance.newInstanceOf(aClass, (String)signature.javaValue(), arg1, arg2, arg3));
         instance.javaClassName(className);
         return instance;
@@ -85,6 +93,7 @@ public class Java extends PrimObject implements JavaWrapper {
     public static Java newInstanceSignature(PrimObject className, PrimObject signature, PrimObject... args) {
         Class<?> aClass = JavaWrapper.findClass(className);
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(instance.newInstanceOf(aClass, (String)signature.javaValue(), args));
         instance.javaClassName(className);
         return instance;
@@ -95,6 +104,7 @@ public class Java extends PrimObject implements JavaWrapper {
         if (o instanceof Java) return (Java) o; // avoid nested Java objects
         
         Java instance = new Java();
+        instance.clazz(classes.get(JavaClass.class.getName()));
         instance.javaValue(o);
         // XXX: to be converted into Smalltalk String
         PrimObject className = new PrimObject();

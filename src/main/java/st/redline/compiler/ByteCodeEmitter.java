@@ -199,7 +199,7 @@ class ByteCodeEmitter implements Emitter, Opcodes {
         emit(messages.get(index));
         index++;
         // Emit rest of the right hand side of assignment.
-        while (messages.get(index).isTail())
+        while (index < messages.size() && messages.get(index).isTail())
             emit(messages.get(index++));
         // Do assignment here.
         mv.visitMethodInsn(INVOKEVIRTUAL, "st/redline/kernel/PrimContext", "temporaryAtPut", "(ILst/redline/kernel/PrimObject;)Lst/redline/kernel/PrimObject;", false);

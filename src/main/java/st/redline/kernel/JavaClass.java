@@ -5,10 +5,12 @@
 
 package st.redline.kernel;
 
+import java.util.Arrays;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
+import st.redline.Smalltalk;
 
 /**
  * @author Matt Selway
@@ -16,7 +18,7 @@ import edu.emory.mathcs.backport.java.util.Arrays;
 public class JavaClass extends PrimObject implements JavaWrapper {
     
     private static Log LOG = LogFactory.getLog(JavaClass.class);
-
+    
     // XXX: instance variables will need to be converted to conform to PrimObject so
     // that this class fully conforms to Smalltalk.
     protected PrimObject javaClassName;
@@ -24,6 +26,7 @@ public class JavaClass extends PrimObject implements JavaWrapper {
     // will just be #for: in Smalltalk
     public static JavaClass forClass(PrimObject className) {
         JavaClass jc = new JavaClass();
+        jc.clazz(classes.get(JavaClass.class.getName()));
         jc.javaClassName(className);
         jc.javaValue(JavaWrapper.findClass(className));
         return jc;
@@ -33,6 +36,7 @@ public class JavaClass extends PrimObject implements JavaWrapper {
         if (aClass == null) return null; // XXX: should return 'nil'
         
         JavaClass jc = new JavaClass();
+        jc.clazz(classes.get(JavaClass.class.getName()));
         jc.javaValue(aClass);
         // XXX: to be converted into Smalltalk String
         PrimObject className = new PrimObject();
@@ -152,4 +156,59 @@ public class JavaClass extends PrimObject implements JavaWrapper {
         
         return this.field((Class<?>)javaValue(), this, (String)fieldName.javaValue());
     }
+
+    // for bootstrapping
+    @Override
+    public PrimObject sendMessages(Smalltalk smalltalk) {
+    
+        JavaWrapper.super.sendMessages(smalltalk);
+        
+        PrimClass clazz = classes.get(getClass().getName());
+        
+        PrimObject method = new PrimMethod().function((m, receiver, context) -> ((JavaClass)receiver).newInstance());
+        method.javaValue("Method new");
+        clazz.methodAtPut("new", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaClass)receiver).newInstance(getArgs(context)));
+        method.javaValue("Method newWith:");
+        clazz.methodAtPut("newWith:", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaClass)receiver).newInstance(getArgs(context)));
+        method.javaValue("Method newWith:with:");
+        clazz.methodAtPut("newWith:with:", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaClass)receiver).newInstance(getArgs(context)));
+        method.javaValue("Method newWith:with:with:");
+        clazz.methodAtPut("newWith:with:with:", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaClass)receiver).newInstanceSignature(context.argumentAt(0), getArgs(context, 1)));
+        method.javaValue("Method newSignature:with:");
+        clazz.methodAtPut("newSignature:with:", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaClass)receiver).newInstanceSignature(context.argumentAt(0), getArgs(context, 1)));
+        method.javaValue("Method newSignature:with:with:");
+        clazz.methodAtPut("newSignature:with:with:", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaClass)receiver).newInstanceSignature(context.argumentAt(0), getArgs(context, 1)));
+        method.javaValue("Method newWith:with:with:");
+        clazz.methodAtPut("newSignature:with:with:with:", method);
+        
+        return this;
+    }
+
+    // for bootstrapping only
+    private PrimObject[] getArgs(PrimContext context) {
+        return getArgs(context, 0);
+    }
+    
+    private PrimObject[] getArgs(PrimContext context, int startingAt) {
+        
+        int size = context.selector().split(":").length - startingAt;
+        PrimObject[] args = new PrimObject[size];
+        for (int i = startingAt; i < size; i++) {
+            args[i] = context.argumentAt(i);
+        }
+        return args;
+    }
+    
 }

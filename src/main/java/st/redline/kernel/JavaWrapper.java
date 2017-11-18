@@ -21,13 +21,16 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import st.redline.Smalltalk;
+import st.redline.classloader.Script;
+
 /**
  * Note: Exceptions are currently being caught and ignored. The plan is to raise the
  * appropriate Smalltalk Exceptions later.
  * 
  * @author Matt Selway
  */
-public interface JavaWrapper {
+public interface JavaWrapper extends Script {
     
     public static final Map<String, Class<?>> PRIMITIVE_TYPES = primitiveTypes();
     
@@ -448,6 +451,45 @@ public interface JavaWrapper {
         if (o instanceof PrimObject) return (PrimObject) o;
         else if (o == null) return new PrimObject();
         else return Java.on(o);
+    }
+    
+    
+    // For bootstrapping. To be removed.
+    public static Map<String, PrimClass> classes = new HashMap<>();
+
+    @Override
+    public default PrimObject sendMessages(Smalltalk smalltalk) {
+        // MS TODO: currently for bootstrapping, will remove once we have it all 
+        // implemented in Smalltalk source files. 
+
+        PrimObject objectClass = smalltalk.resolve("Object", getClass().getName(), "st.redline.kernel");
+        PrimClass clazz = (PrimClass) objectClass.perform(smalltalk.createSymbol(getClass().getSimpleName()), "subclass:");
+        PrimClass metaClass = (PrimClass) clazz.clazz();
+        
+        classes.put(this.getClass().getName(), clazz);
+        classes.put(this.getClass().getName() + " class", metaClass);
+        
+        PrimObject method = new PrimMethod().function((m, receiver, context) -> JavaClass.forClass(context.argumentAt(0)));
+        method.javaValue("Method for:");
+        metaClass.methodAtPut("for:", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaWrapper) receiver).call(context.argumentAt(0)) );
+        method.javaValue("Method call:");
+        clazz.methodAtPut("call:", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaWrapper) receiver).call(context.argumentAt(0), context.argumentAt(1)) );
+        method.javaValue("Method call:with:");
+        clazz.methodAtPut("call:with:", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaWrapper) receiver).call(context.argumentAt(0), context.argumentAt(1), context.argumentAt(2)) );
+        method.javaValue("Method call:with:with:");
+        clazz.methodAtPut("call:with:with:", method);
+        
+        method = new PrimMethod().function((m, receiver, context) -> ((JavaWrapper) receiver).field(context.argumentAt(0)) );
+        method.javaValue("Method field:");
+        clazz.methodAtPut("field:", method);
+        
+        return (PrimObject) this;
     }
 
 }

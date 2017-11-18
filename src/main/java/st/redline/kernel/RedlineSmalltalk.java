@@ -81,7 +81,6 @@ public class RedlineSmalltalk extends PrimObject implements Smalltalk {
         return object;
     }
 
-    @Override @SuppressWarnings("unchecked")
     public PrimObject resolve(String reference, String className, String packageName) {
         if (isTraceEnabled(LOG))
             LOG.trace(reference + " for " + className + " in " + packageName);
@@ -92,8 +91,10 @@ public class RedlineSmalltalk extends PrimObject implements Smalltalk {
             else if (reference.equals("Smalltalk"))
                 return classes.get("st.redline.kernel.Smalltalk");
             else
-                throw new RuntimeException("Import for '" + reference + "' not found in " + packageName + "." + className);
-
+                // Implicit import for current package
+                fullPath = packageName + "." + reference;
+//        throw new RuntimeException("Import for '" + reference + "' not found in " + packageName + "." + className);
+        
         if (classes.containsKey(fullPath))
             return classes.get(fullPath);
 
